@@ -1,0 +1,38 @@
+stages:
+  - build-push
+  - deploy
+
+include:
+# run template build and push
+  - project: 'tekab-dev-team/config/gitlab-ci' 
+    ref: 'develop' 
+    file: 'docker-template.yml'
+
+
+build: 
+    extends:
+        - .build-push
+    variables: 
+        API_URL: $API_URL 
+        FO_PORT: $FO_PORT 
+        SERVER_PORT: $SERVER_PORT 
+        SITE_URL: $SITE_URL 
+
+# Deployments
+deploy:staging: 
+    extends:
+        - .deploy
+    environment: staging
+    needs:
+        - job: build
+    
+deploy:production: 
+    extends:
+        - .deploy
+    only: 
+        - main
+    tags:
+      - selvitys-tekab    
+    environment: production
+    needs:
+        - job: build
